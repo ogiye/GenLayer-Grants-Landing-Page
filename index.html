@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenLayer Grants | Build, Earn, Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        genBg: '#05050A',       // Ultra dark background
+                        genPrimary: '#4F46E5',  // Indigo 600
+                        genSecondary: '#9333EA', // Purple 600
+                        genAccent: '#059669',   // Emerald 600
+                        glass: 'rgba(255, 255, 255, 0.03)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #05050A;
+            color: #f8fafc;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(20, 20, 30, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #05050A; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Scroll Reveal Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+
+        /* Hexagon node styling for timeline */
+        .hex-node {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: all 0.4s ease;
+        }
+        
+        .hex-node:hover {
+            transform: scale(1.15) rotate(15deg);
+            box-shadow: 0 0 30px currentColor;
+        }
+
+        /* Background grid */
+        .bg-grid {
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+        }
+
+        /* Magic Mouse Glow */
+        #mouse-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 60%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-genPrimary selection:text-white">
+
+    <div id="mouse-glow"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="absolute inset-0 glass-panel border-b-0 border-b border-white/5 opacity-0 transition-opacity duration-300" id="nav-bg"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-genPrimary to-genSecondary flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+                        <i class="fa-solid fa-layer-group text-white text-lg"></i>
+                    </div>
+                    <span class="font-display font-bold text-2xl tracking-tight">GenLayer <span class="text-white/40 font-light">Grants</span></span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-center space-x-8 font-display">
+                        <a href="#program" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors relative group">
+                            Philosophy
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-genPrimary transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <a href="#journey" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors relative group">
+                            The Journey
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-genSecondary transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <button onclick="openAuthModal()" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors relative group">
+                            Login / Sign Up
+                        </button>
+                        <button onclick="openModal()" class="relative inline-flex h-10 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-genPrimary focus:ring-offset-2 focus:ring-offset-gray-900 group">
+                            <span class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]"></span>
+                            <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-genBg px-6 py-1 text-sm font-bold text-white backdrop-blur-3xl transition-all group-hover:bg-opacity-80">
+                                Start Building
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-grid">
+        <!-- Animated Background Orbs -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-genPrimary/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob"></div>
+        <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-genSecondary/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-1/4 left-1/2 w-96 h-96 bg-genAccent/20 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-4000"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+            
+            <div class="reveal inline-flex items-center gap-3 px-5 py-2 rounded-full glass-panel mb-10 border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-genAccent opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-genAccent"></span>
+                </span>
+                <span class="text-sm font-medium tracking-wide text-gray-200">Season 1 Applications Now Open</span>
+            </div>
+            
+            <h1 class="reveal reveal-delay-1 font-display text-6xl md:text-8xl font-black tracking-tight mb-6 leading-[1.1]">
+                Code. Ship.<br/>
+                <span class="text-gradient">Get Rewarded.</span>
+            </h1>
+            
+            <p class="reveal reveal-delay-2 mt-6 text-xl text-gray-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+                We don't just fund ideas; we reward execution. Join the GenLayer ecosystem, hit your development milestones, and unlock capital and massive organic reach.
+            </p>
+            
+            <div class="reveal reveal-delay-3 flex flex-col sm:flex-row justify-center gap-6 w-full sm:w-auto">
+                <button onclick="openModal()" class="group relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg overflow-hidden transition-transform hover:scale-105">
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    <span class="relative flex items-center gap-2">Apply Now <i class="fa-solid fa-arrow-right"></i></span>
+                </button>
+                <a href="#journey" class="px-8 py-4 rounded-full text-lg font-bold glass-panel hover:bg-white/5 border border-white/10 transition-all hover:border-white/30 text-white">
+                    Explore the Journey
+                </a>
+            </div>
+            
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce flex flex-col items-center gap-2 text-gray-500">
+                <span class="text-xs tracking-widest uppercase font-semibold">Scroll</span>
+                <i class="fa-solid fa-arrow-down"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Program Philosophy Section -->
+    <section id="program" class="py-32 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20 reveal">
+                <h2 class="font-display text-4xl md:text-5xl font-extrabold mb-6">A New Paradigm for Grants</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg font-light">Traditional grants lock you into rigid roadmaps. We designed a fluid system that supports you precisely when you prove traction.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="reveal glass-panel p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300 group border-t border-t-genPrimary/30">
+                    <div class="h-16 w-16 bg-genPrimary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-genPrimary/20 transition-colors shadow-[0_0_30px_rgba(79,70,229,0.2)]">
+                        <i class="fa-solid fa-code-commit text-genPrimary text-3xl"></i>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-4 text-white">Milestone Driven</h3>
+                    <p class="text-gray-400 font-light leading-relaxed">Capital is unlocked progressively. As you move from Testnet MVP to Mainnet scaling, your funding scales with your achievements.</p>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="reveal reveal-delay-1 glass-panel p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300 group border-t border-t-genSecondary/30">
+                    <div class="h-16 w-16 bg-genSecondary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-genSecondary/20 transition-colors shadow-[0_0_30px_rgba(147,51,234,0.2)]">
+                        <i class="fa-solid fa-satellite-dish text-genSecondary text-3xl"></i>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-4 text-white">Network Amplification</h3>
+                    <p class="text-gray-400 font-light leading-relaxed">Hitting a milestone isn't just about money. It triggers our internal marketing engine to broadcast your success to the entire Web3 space.</p>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="reveal reveal-delay-2 glass-panel p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300 group border-t border-t-genAccent/30">
+                    <div class="h-16 w-16 bg-genAccent/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-genAccent/20 transition-colors shadow-[0_0_30px_rgba(5,150,105,0.2)]">
+                        <i class="fa-solid fa-user-astronaut text-genAccent text-3xl"></i>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-4 text-white">Core Dev Support</h3>
+                    <p class="text-gray-400 font-light leading-relaxed">Skip the line. Grantees get a direct channel to GenLayer protocol engineers to unblock technical hurdles and optimize smart contracts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Journey (Timeline) -->
+    <section id="journey" class="py-32 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-genPrimary/5 to-transparent"></div>
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-24 reveal">
+                <h2 class="font-display text-4xl md:text-6xl font-black mb-6">The Builder's Journey</h2>
+                <p class="text-gray-400 text-xl font-light">Clear expectations. Tangible rewards. No red tape.</p>
+            </div>
+
+            <div class="relative wrap overflow-hidden p-10 h-full">
+                <!-- Center Line -->
+                <div class="absolute border-opacity-20 border-white h-full border-l-2 left-1/2 transform -translate-x-1/2 hidden md:block"></div>
+                <!-- Glowing progress line (simulated) -->
+                <div class="absolute bg-gradient-to-b from-genPrimary via-genSecondary to-genAccent h-3/4 w-1 left-1/2 transform -translate-x-1/2 hidden md:block rounded-full shadow-[0_0_15px_rgba(147,51,234,0.8)]"></div>
+
+                <!-- Phase 1: MVP -->
+                <div class="mb-24 flex justify-between items-center w-full right-timeline reveal flex-col md:flex-row">
+                    <div class="order-1 md:w-5/12 w-full"></div>
+                    <div class="z-20 flex items-center order-1 bg-genBg shadow-xl w-16 h-16 rounded-full border-4 border-genPrimary hex-node text-genPrimary justify-center mb-6 md:mb-0 hidden md:flex">
+                        <i class="fa-solid fa-1 font-bold text-xl"></i>
+                    </div>
+                    <div class="order-1 glass-panel rounded-3xl w-full md:w-5/12 px-8 py-8 border-l-4 border-l-genPrimary relative group">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-genPrimary to-purple-600 rounded-3xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                        <div class="relative">
+                            <span class="text-genPrimary font-bold tracking-widest text-xs uppercase mb-2 block">Phase 1</span>
+                            <h3 class="font-display font-bold text-3xl mb-3">The MVP Build</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-6">Deploy a functional Minimum Viable Product on the GenLayer testnet demonstrating core utility.</p>
+                            
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genPrimary mr-3"></div> Smart contract deployment</div>
+                                <div class="flex items-center text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genPrimary mr-3"></div> Basic UI integration</div>
+                                <div class="flex items-center text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genPrimary mr-3"></div> Open-source repository</div>
+                            </div>
+                            
+                            <div class="bg-genPrimary/10 border border-genPrimary/30 rounded-xl p-4 flex items-center justify-between">
+                                <span class="text-sm text-gray-300">Reward Unlock</span>
+                                <span class="font-bold text-genPrimary">$5,000 Grant</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Mainnet -->
+                <div class="mb-24 flex justify-between flex-row-reverse items-center w-full left-timeline reveal flex-col md:flex-row-reverse">
+                    <div class="order-1 md:w-5/12 w-full"></div>
+                    <div class="z-20 flex items-center order-1 bg-genBg shadow-xl w-16 h-16 rounded-full border-4 border-genSecondary hex-node text-genSecondary justify-center mb-6 md:mb-0 hidden md:flex">
+                        <i class="fa-solid fa-2 font-bold text-xl"></i>
+                    </div>
+                    <div class="order-1 glass-panel rounded-3xl w-full md:w-5/12 px-8 py-8 border-r-0 md:border-r-4 border-l-4 md:border-l-0 border-genSecondary relative group text-left md:text-right">
+                        <div class="absolute -inset-0.5 bg-gradient-to-l from-genSecondary to-pink-600 rounded-3xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+                        <div class="relative">
+                            <span class="text-genSecondary font-bold tracking-widest text-xs uppercase mb-2 block">Phase 2</span>
+                            <h3 class="font-display font-bold text-3xl mb-3">Mainnet Launch</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-6">Transition to GenLayer Mainnet with a polished user interface, security audit, and initial user base.</p>
+                            
+                            <div class="space-y-3 mb-6 flex flex-col md:items-end items-start">
+                                <div class="flex items-center flex-row-reverse md:flex-row text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genSecondary md:ml-3 mr-3 md:mr-0"></div> Live Mainnet Deployment</div>
+                                <div class="flex items-center flex-row-reverse md:flex-row text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genSecondary md:ml-3 mr-3 md:mr-0"></div> Security Audit Completed</div>
+                                <div class="flex items-center flex-row-reverse md:flex-row text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genSecondary md:ml-3 mr-3 md:mr-0"></div> 100+ Active Wallets</div>
+                            </div>
+                            
+                            <div class="bg-genSecondary/10 border border-genSecondary/30 rounded-xl p-4 flex items-center justify-between flex-row md:flex-row-reverse">
+                                <span class="text-sm text-gray-300">Reward Unlock</span>
+                                <span class="font-bold text-genSecondary">$15,000 + Co-Marketing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3: Growth -->
+                <div class="flex justify-between items-center w-full right-timeline reveal flex-col md:flex-row">
+                    <div class="order-1 md:w-5/12 w-full"></div>
+                    <div class="z-20 flex items-center order-1 bg-genBg shadow-[0_0_30px_rgba(5,150,105,0.6)] w-20 h-20 rounded-full border-4 border-genAccent hex-node text-genAccent justify-center mb-6 md:mb-0 hidden md:flex animate-pulse-slow">
+                        <i class="fa-solid fa-rocket text-2xl"></i>
+                    </div>
+                    <div class="order-1 glass-panel rounded-3xl w-full md:w-5/12 px-8 py-8 border-l-4 border-l-genAccent relative group overflow-hidden">
+                        <!-- Radiant background glow inside card -->
+                        <div class="absolute -top-20 -right-20 w-40 h-40 bg-genAccent/20 rounded-full blur-3xl"></div>
+                        
+                        <div class="relative z-10">
+                            <span class="text-genAccent font-bold tracking-widest text-xs uppercase mb-2 block">Phase 3</span>
+                            <h3 class="font-display font-bold text-3xl mb-3 text-white">Ecosystem Cornerstone</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed mb-6">Achieve substantial traction, high transaction volume, or top TVL. Become a flagship application.</p>
+                            
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genAccent mr-3 shadow-[0_0_5px_#059669]"></div> Hit Volume/TVL targets</div>
+                                <div class="flex items-center text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genAccent mr-3 shadow-[0_0_5px_#059669]"></div> 5,000+ Daily Active Users</div>
+                                <div class="flex items-center text-sm text-gray-300"><div class="w-1.5 h-1.5 rounded-full bg-genAccent mr-3 shadow-[0_0_5px_#059669]"></div> Cross-protocol integrations</div>
+                            </div>
+                            
+                            <div class="bg-genAccent/20 border border-genAccent/50 rounded-xl p-5 flex flex-col gap-2">
+                                <span class="text-xs text-gray-400 uppercase tracking-widest">Final Milestone Unlock</span>
+                                <span class="font-display font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-genAccent to-emerald-300">Up to $50,000</span>
+                                <span class="text-sm text-white font-medium">+ Featured Network Spotlight</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rewards Details -->
+    <section id="rewards" class="py-32 bg-[#08080E] relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-genSecondary/5 to-transparent skew-x-12 transform origin-top-right"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div class="reveal">
+                    <div class="inline-block px-4 py-1 rounded-full border border-genSecondary/30 text-genSecondary text-xs font-bold tracking-widest uppercase mb-6 bg-genSecondary/10">The Amplifier Effect</div>
+                    <h2 class="font-display text-4xl md:text-5xl font-black mb-8 leading-tight">Beyond Capital:<br/><span class="text-white">We Build Your Audience.</span></h2>
+                    <p class="text-gray-400 text-lg mb-10 font-light leading-relaxed">
+                        Reaching users is the hardest part of Web3. When you build on GenLayer and hit milestones, we lend you our megaphone. Our audience becomes your audience.
+                    </p>
+                    
+                    <div class="space-y-8">
+                        <div class="flex items-start group">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-12 h-12 rounded-2xl glass-panel flex items-center justify-center text-blue-400 group-hover:scale-110 group-hover:bg-blue-500/10 transition-all">
+                                    <i class="fa-brands fa-twitter text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="ml-5">
+                                <h4 class="text-xl font-bold font-display text-white group-hover:text-blue-400 transition-colors">Dedicated X Threads</h4>
+                                <p class="text-gray-500 mt-2 font-light leading-relaxed">Deep dives into your tech and product posted from the main GenLayer account to our massive follower base.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start group">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-12 h-12 rounded-2xl glass-panel flex items-center justify-center text-red-400 group-hover:scale-110 group-hover:bg-red-500/10 transition-all">
+                                    <i class="fa-brands fa-youtube text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="ml-5">
+                                <h4 class="text-xl font-bold font-display text-white group-hover:text-red-400 transition-colors">Founder Spotlights</h4>
+                                <p class="text-gray-500 mt-2 font-light leading-relaxed">High-production video interviews and AMA sessions featured on our official YouTube and Discord channels.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Social Proof Mockup -->
+                <div class="relative reveal reveal-delay-2 perspective-1000">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-genPrimary/30 to-genSecondary/30 rounded-3xl blur-2xl transform rotate-6"></div>
+                    
+                    <!-- 3D Tilting Container -->
+                    <div class="glass-panel rounded-3xl p-6 relative border border-white/10 transform-gpu transition-transform duration-500 hover:rotate-y-[-5deg] hover:rotate-x-[5deg]">
+                        <div class="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
+                            <h3 class="font-display text-lg font-bold text-gray-300">Live Ecosystem Updates</h3>
+                            <div class="flex gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mock Tweet 1 -->
+                        <div class="bg-[#05050A]/80 backdrop-blur-md p-5 rounded-2xl border border-white/5 mb-4 shadow-lg transform transition-all hover:scale-[1.02] cursor-default">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center font-bold font-display">G</div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white flex items-center gap-1">GenLayer <i class="fa-solid fa-certificate text-blue-400 text-xs"></i></p>
+                                        <p class="text-xs text-gray-500">@GenLayer • 2h</p>
+                                    </div>
+                                </div>
+                                <i class="fa-brands fa-twitter text-gray-600"></i>
+                            </div>
+                            <p class="text-sm text-gray-300 mb-4 leading-relaxed">Massive congrats to <span class="text-blue-400">@DeFiProto</span> for hitting Phase 3! 🚀 Over $10M TVL locked in their new automated yield strategy. Built seamlessly on GenLayer. Check it out 👇</p>
+                            <div class="w-full h-32 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-white/5 mb-4 flex items-center justify-center">
+                                <i class="fa-solid fa-chart-pie text-4xl text-gray-700"></i>
+                            </div>
+                            <div class="flex gap-6 text-gray-500 text-xs font-medium">
+                                <span class="hover:text-blue-400 transition-colors cursor-pointer"><i class="fa-regular fa-comment mr-2"></i>42</span>
+                                <span class="hover:text-green-400 transition-colors cursor-pointer"><i class="fa-solid fa-retweet mr-2"></i>128</span>
+                                <span class="text-pink-500"><i class="fa-solid fa-heart mr-2"></i>843</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-32 relative overflow-hidden">
+        <!-- Background graphics -->
+        <div class="absolute inset-0 bg-grid opacity-30"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-genPrimary/10 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div class="max-w-4xl mx-auto px-4 relative z-10 text-center reveal">
+            <h2 class="font-display text-5xl md:text-7xl font-black mb-8 tracking-tight">Ready to <span class="text-gradient">Buidl?</span></h2>
+    <!-- (Sections remain unchanged until modals) -->
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel rounded-3xl w-full max-w-sm shadow-2xl transform scale-95 transition-all duration-300 border border-white/10 overflow-hidden" id="authModalContent">
+            
+            <div class="bg-white/5 px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                <h3 class="font-display text-lg font-bold text-white">Account Access</h3>
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-white transition-colors w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-8">
+                <form id="authForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold tracking-widest uppercase text-gray-400 mb-1">Email</label>
+                        <input type="email" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-genPrimary focus:ring-1 focus:ring-genPrimary text-white placeholder-gray-600 transition-all font-light">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold tracking-widest uppercase text-gray-400 mb-1">Password</label>
+                        <input type="password" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-genPrimary focus:ring-1 focus:ring-genPrimary text-white placeholder-gray-600 transition-all font-light">
+                    </div>
+                    <button type="submit" class="w-full mt-2 bg-genPrimary hover:bg-genPrimary/90 text-white font-bold py-3 rounded-xl transition-colors">Sign In</button>
+                </form>
+                <p class="text-center text-xs text-gray-500 mt-4">Don't have an account? <button class="text-genSecondary hover:underline">Sign Up</button></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="applyModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel rounded-3xl w-full max-w-lg shadow-2xl transform scale-95 transition-all duration-300 border border-white/10 overflow-hidden" id="modalContent">
+            
+            <!-- Modal Header -->
+            <div class="bg-white/5 px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-genAccent animate-pulse"></div>
+                    <h3 class="font-display text-lg font-bold text-white">Application Terminal</h3>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-8">
+                <form id="applicationForm" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Project Name</label>
+                        <input type="text" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-genPrimary focus:ring-1 focus:ring-genPrimary text-white placeholder-gray-600 transition-all font-light" placeholder="What are you building?">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Contact Email</label>
+                        <input type="email" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-genPrimary focus:ring-1 focus:ring-genPrimary text-white placeholder-gray-600 transition-all font-light" placeholder="gm@founder.eth">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Github / Demo URL</label>
+                        <input type="url" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-genPrimary focus:ring-1 focus:ring-genPrimary text-white placeholder-gray-600 transition-all font-light" placeholder="https://github.com/...">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">Current Phase</label>
+                        <select class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-genPrimary focus:ring-1 focus:ring-genPrimary text-white appearance-none font-light">
+                            <option>Whitepaper / Idea</option>
+                            <option>Building MVP (Phase 1 target)</option>
+                            <option>Testnet Live (Phase 2 target)</option>
+                        </select>
+                    </div>
+
+                    <button type="button" onclick="submitForm()" class="w-full mt-6 bg-white text-black hover:bg-gray-200 font-display font-bold py-4 rounded-xl transition-colors relative overflow-hidden group">
+                        <span class="relative z-10 flex items-center justify-center gap-2" id="btn-text">Submit Protocol <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i></span>
+                    </button>
+                </form>
+
+                <div id="successMessage" class="hidden text-center py-10">
+                    <div class="w-20 h-20 bg-genAccent/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-genAccent/30 shadow-[0_0_30px_rgba(5,150,105,0.3)]">
+                        <i class="fa-solid fa-check text-genAccent text-4xl"></i>
+                    </div>
+                    <h4 class="font-display text-2xl font-bold mb-3 text-white">Transmission Successful</h4>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-8">Your application has been logged on our servers. The core team will review your specs and ping you within 48 hours.</p>
+                    <button onclick="closeModal()" class="border border-white/20 hover:bg-white/5 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all">Acknowledge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ... existing code ... (Mouse Glow, Navbar logic, Observers remain the same)
+        const glow = document.getElementById('mouse-glow');
+        let isMouseMoving = false;
+        let timeout;
+
+        document.addEventListener('mousemove', (e) => {
+            isMouseMoving = true;
+            glow.style.opacity = '1';
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+            
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                isMouseMoving = false;
+                glow.style.opacity = '0';
+            }, 100);
+        });
+
+        document.addEventListener('mouseleave', () => glow.style.opacity = '0');
+
+        const navBg = document.getElementById('nav-bg');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navBg.classList.remove('opacity-0');
+                navBg.classList.add('opacity-100');
+            } else {
+                navBg.classList.add('opacity-0');
+                navBg.classList.remove('opacity-100');
+            }
+        });
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach((element) => {
+            observer.observe(element);
+        });
+
+        // Auth Modal
+        const authModal = document.getElementById('authModal');
+        const authModalContent = document.getElementById('authModalContent');
+
+        function openAuthModal() {
+            authModal.classList.remove('pointer-events-none');
+            authModal.classList.remove('opacity-0');
+            
+            setTimeout(() => {
+                authModalContent.classList.remove('scale-95');
+                authModalContent.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAuthModal() {
+            authModalContent.classList.remove('scale-100');
+            authModalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                authModal.classList.add('opacity-0');
+                authModal.classList.add('pointer-events-none');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // Apply Modal
+        const modal = document.getElementById('applyModal');
+        const modalContent = document.getElementById('modalContent');
+        const form = document.getElementById('applicationForm');
+        const successMsg = document.getElementById('successMessage');
+
+        function openModal() {
+            modal.classList.remove('pointer-events-none');
+            modal.classList.remove('opacity-0');
+            
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            
+            form.style.display = 'block';
+            successMsg.classList.add('hidden');
+            form.reset();
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('opacity-0');
+                modal.classList.add('pointer-events-none');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) closeAuthModal();
+        });
+
+        function submitForm() {
+            const inputs = form.querySelectorAll('input[required]');
+            let isValid = true;
+            inputs.forEach(input => {
+                if(!input.value.trim()) isValid = false;
+            });
+
+            if(isValid) {
+                const btnText = document.getElementById('btn-text');
+                const originalHtml = btnText.innerHTML;
+                btnText.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing...';
+                
+                setTimeout(() => {
+                    form.style.display = 'none';
+                    successMsg.classList.remove('hidden');
+                    btnText.innerHTML = originalHtml;
+                }, 1500);
+            } else {
+                const btnText = document.getElementById('btn-text');
+                const originalHtml = btnText.innerHTML;
+                btnText.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Missing Parameters';
+                btnText.parentElement.classList.add('bg-red-500', 'text-white');
+                btnText.parentElement.classList.remove('bg-white', 'text-black');
+                
+                setTimeout(() => {
+                    btnText.innerHTML = originalHtml;
+                    btnText.parentElement.classList.remove('bg-red-500', 'text-white');
+                    btnText.parentElement.classList.add('bg-white', 'text-black');
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenLayer Grants | Build, Earn, Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        genBg: '#05050A',
+                        genPrimary: '#4F46E5',
+                        genSecondary: '#9333EA',
+                        genAccent: '#059669',
+                        glass: 'rgba(255, 255, 255, 0.03)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #05050A; color: #f8fafc; overflow-x: hidden; scroll-behavior: smooth; }
+        .glass-panel { background: rgba(20, 20, 30, 0.4); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .text-gradient { background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .bg-grid { background-size: 50px 50px; background-image: linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-genPrimary to-genSecondary flex items-center justify-center">
+                        <i class="fa-solid fa-layer-group text-white text-lg"></i>
+                    </div>
+                    <span class="font-display font-bold text-2xl tracking-tight">GenLayer <span class="text-white/40 font-light">Grants</span></span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="openAuthModal()" class="text-gray-300 hover:text-white px-3 py-2 font-medium">Login</button>
+                    <button onclick="openModal()" class="bg-white text-black px-6 py-2 rounded-full font-bold">Start Building</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Highlight Section -->
+    <section class="py-32 relative overflow-hidden bg-[#0a0a10]">
+        <div class="absolute inset-0 bg-gradient-to-b from-genPrimary/5 to-transparent"></div>
+        <div class="max-w-4xl mx-auto px-4 relative z-10 text-center">
+            <h2 class="font-display text-5xl font-black mb-8">Get <span class="text-gradient">Highlighted.</span></h2>
+            <p class="text-gray-400 text-lg mb-12 max-w-2xl mx-auto">
+                Building something truly pioneering? Submit your project for an ecosystem spotlight. We showcase impactful work to our entire network, connecting you with partners, investors, and power users.
+            </p>
+            
+            <div class="glass-panel p-10 rounded-3xl border border-genAccent/30 mb-12">
+                <h3 class="text-xl font-bold mb-6 text-white">How it works</h3>
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div>
+                        <div class="text-genAccent font-bold text-2xl mb-2">1. Build</div>
+                        <p class="text-gray-400 text-sm">Create high-impact, open-source work on GenLayer.</p>
+                    </div>
+                    <div>
+                        <div class="text-genAccent font-bold text-2xl mb-2">2. Submit</div>
+                        <p class="text-gray-400 text-sm">Fill out our Spotlight form with your metrics and impact.</p>
+                    </div>
+                    <div>
+                        <div class="text-genAccent font-bold text-2xl mb-2">3. Feature</div>
+                        <p class="text-gray-400 text-sm">Get featured in our official network updates.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="openModal()" class="bg-genAccent hover:bg-emerald-600 text-white font-bold py-4 px-10 rounded-full transition-transform hover:scale-105">
+                Submit Project for Spotlight
+            </button>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel rounded-3xl w-full max-w-sm p-8">
+            <h3 class="text-xl font-bold mb-4">Login / Sign Up</h3>
+            <form class="space-y-4">
+                <input type="email" placeholder="Email" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white">
+                <input type="password" placeholder="Password" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white">
+                <button type="button" class="w-full bg-genPrimary py-3 rounded-xl">Access</button>
+            </form>
+            <button onclick="closeAuthModal()" class="mt-4 text-gray-500 text-sm">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="applyModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel rounded-3xl w-full max-w-md p-8">
+            <h3 class="text-xl font-bold mb-4">Submit Application</h3>
+            <form id="applicationForm" class="space-y-4">
+                <input type="text" placeholder="Project Name" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white">
+                <textarea placeholder="Tell us about your project impact..." class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white h-32"></textarea>
+                <button type="button" onclick="submitForm()" class="w-full bg-genAccent py-3 rounded-xl">Submit</button>
+            </form>
+            <div id="successMessage" class="hidden text-center">
+                <i class="fa-solid fa-check text-genAccent text-4xl mb-4"></i>
+                <p>Transmission Successful!</p>
+            </div>
+            <button onclick="closeModal()" class="mt-4 text-gray-500 text-sm w-full">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Modal Logic
+        const authModal = document.getElementById('authModal');
+        const applyModal = document.getElementById('applyModal');
+
+        function openAuthModal() { authModal.classList.remove('opacity-0', 'pointer-events-none'); }
+        function closeAuthModal() { authModal.classList.add('opacity-0', 'pointer-events-none'); }
+        
+        function openModal() { applyModal.classList.remove('opacity-0', 'pointer-events-none'); }
+        function closeModal() { applyModal.classList.add('opacity-0', 'pointer-events-none'); }
+
+        function submitForm() {
+            document.getElementById('applicationForm').style.display = 'none';
+            document.getElementById('successMessage').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+</html>
